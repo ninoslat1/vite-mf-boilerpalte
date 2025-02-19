@@ -1,17 +1,29 @@
-FROM node:18-alpine
+# Stage 1: Build the application
+FROM node:18-alpine AS builder
 
 WORKDIR /app
 
-COPY package.json .
-
+# Copy package.json and install dependencies
+COPY package.json ./
 RUN npm install
 
-RUN npm i -g serve
-
+# Copy the rest of your application code
 COPY . .
 
+# Build the Vite application
 RUN npm run build
 
-EXPOSE 3000
+# Stage 2: Serve the application using a distroless image
+FROM gcr.io/distroless/nodejs:18
 
-CMD [ "serve", "-s", "dist" ]
+WORKDIR /app
+
+# Copy the built dist files and the server script
+COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/index.cjs .
+
+# Expose the port
+EXPOSE 5000
+
+# Command to run the server
+CMD ["index.cjs"]
