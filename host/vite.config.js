@@ -8,18 +8,21 @@ export default defineConfig({
     federation({
       name: 'host',
       remotes: {
-        RemoteApp: '/remote-app/assets/remoteEntry.js',
+        remote: '/remote/assets/remoteEntry.js',
       },
       shared: ['react', 'react-dom'],
     }),
   ],
   server: {
+    port: 5173,
+    strictPort: true,
+    host: true,
     proxy: {
-      '/remote-app/assets': {
+      '/remote/assets': {
         target: 'http://localhost:4173',
         secure: false,
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/remote-app/, ''),
+        rewrite: (path) => path.replace(/^\/remote/, ''),
         build: {
           target: 'esnext'
         }
@@ -27,6 +30,9 @@ export default defineConfig({
     },
   },
   build: {
-    target: 'esnext'
+    modulePreload: false,
+    target: "esnext",
+    minify: false,
+    cssCodeSplit: false,
   }
 });

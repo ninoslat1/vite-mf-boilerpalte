@@ -4,11 +4,11 @@ import federation from '@originjs/vite-plugin-federation'
 
 // https://vite.dev/config/
 export default defineConfig({
-  base: "./",
+  base: "/",
   plugins: [
     react(),
     federation({
-      name: "remote_login_sap",
+      name: "remote",
       filename: 'remoteEntry.js',
       exposes: {
         "./App": "./src/App"

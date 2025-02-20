@@ -1,15 +1,13 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
-import RemoteApp from 'RemoteApp/App'
+import { lazy, Suspense } from "react";
+
+const RemoteApp = lazy(() => import("remote/App"));
 
 function App() {
   return (
-    <>
-      <RemoteApp/>
-    </>
-  )
+    <Suspense fallback={<div>Loading Remote Component...</div>}>
+      <RemoteApp />
+    </Suspense>
+  );
 }
 
-export default App
+export default App;

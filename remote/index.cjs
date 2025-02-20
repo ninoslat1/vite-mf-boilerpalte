@@ -3,56 +3,48 @@ const fs = require('fs');
 const path = require('path');
 
 const PORT = 5000;
+const DIST_DIR = path.join(__dirname, 'dist');
 
-// Get __dirname directly since this is CommonJS
-// Function to serve static files
 const serveFile = (filePath, res) => {
   fs.readFile(filePath, (err, data) => {
     if (err) {
-      res.writeHead(404, { 'Content-Type': 'text/plain' });
-      res.end('404 Not Found');
+      if (filePath.endsWith('.html')) {
+        res.writeHead(404, { 'Content-Type': 'text/plain' });
+        res.end('404 Not Found');
+      } else {
+        serveFile(path.join(DIST_DIR, 'index.html'), res);
+      }
       return;
     }
 
     const ext = path.extname(filePath);
-    let contentType = 'text/html';
+    const contentTypeMap = {
+      '.js': 'application/javascript',
+      '.css': 'text/css',
+      '.json': 'application/json',
+      '.png': 'image/png',
+      '.jpg': 'image/jpeg',
+      '.jpeg': 'image/jpeg',
+      '.gif': 'image/gif',
+      '.svg': 'image/svg+xml',
+      '.html': 'text/html'
+    };
 
-    switch (ext) {
-      case '.js':
-        contentType = 'application/javascript';
-        break;
-      case '.css':
-        contentType = 'text/css';
-        break;
-      case '.json':
-        contentType = 'application/json';
-        break;
-      case '.png':
-        contentType = 'image/png';
-        break;
-      case '.jpg':
-      case '.jpeg':
-        contentType = 'image/jpeg';
-        break;
-      case '.gif':
-        contentType = 'image/gif';
-        break;
-      case '.svg':
-        contentType = 'image/svg+xml';
-        break;
-      default:
-        break;
-    }
-
-    res.writeHead(200, { 'Content-Type': contentType });
+    res.writeHead(200, { 'Content-Type': contentTypeMap[ext] || 'text/html' });
     res.end(data);
   });
 };
 
-// Create an HTTP server
 const server = http.createServer((req, res) => {
-  let filePath = path.join(__dirname, 'dist', req.url === '/' ? 'index.html' : req.url);
-  serveFile(filePath, res);
+  let filePath = path.join(DIST_DIR, req.url === '/' ? 'index.html' : req.url);
+
+  fs.stat(filePath, (err, stats) => {
+    if (err || stats.isDirectory()) {
+      serveFile(path.join(DIST_DIR, 'index.html'), res);
+    } else {
+      serveFile(filePath, res);
+    }
+  });
 });
 
 // Start the server
